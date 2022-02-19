@@ -64,8 +64,8 @@ relay:
 
   autoscaling:
     enabled: false
-    minReplicas: 1
-    maxReplicas: 2
+    minReplicas: 2
+    maxReplicas: 5
     targetCPUUtilizationPercentage: 50
   sidecars: [ ]
   volumes: [ ]
@@ -98,8 +98,8 @@ sentry:
 
     autoscaling:
       enabled: false
-      minReplicas: 1
-      maxReplicas: 2
+      minReplicas: 2
+      maxReplicas: 5
       targetCPUUtilizationPercentage: 50
     sidecars: [ ]
     volumes: [ ]
@@ -109,7 +109,7 @@ sentry:
     vstsLimitedScopes: true
 
   worker:
-    replicas: 1
+    replicas: 3
     # concurrency: 4
     env: []
     resources: {}
@@ -123,8 +123,8 @@ sentry:
     # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      minReplicas: 1
-      maxReplicas: 2
+      minReplicas: 2
+      maxReplicas: 5
       targetCPUUtilizationPercentage: 50
     livenessProbe:
       enabled: false
@@ -230,7 +230,7 @@ snuba:
       timeoutSeconds: 2
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     service:
@@ -240,8 +240,8 @@ snuba:
 
     autoscaling:
       enabled: false
-      minReplicas: 1
-      maxReplicas: 2
+      minReplicas: 2
+      maxReplicas: 5
       targetCPUUtilizationPercentage: 50
     sidecars: [ ]
     volumes: [ ]
@@ -251,7 +251,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -278,7 +278,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -305,7 +305,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -321,7 +321,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -334,7 +334,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -346,7 +346,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -373,7 +373,7 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     securityContext: {}
     # tolerations: []
@@ -421,7 +421,7 @@ hooks:
   clickhouseInit:
     podAnnotations: {}
     affinity: {}
-    nodeSelector: 
+    nodeSelector:
       alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
     # tolerations: []
   dbCheck:
@@ -491,7 +491,7 @@ mail:
   from: ""
 
 symbolicator:
-  enabled: true
+  enabled: false
   api:
     replicas: 1
     env: []
@@ -530,8 +530,8 @@ symbolicator:
     # TODO autoscaling in not yet implemented
     autoscaling:
       enabled: false
-      minReplicas: 1
-      maxReplicas: 2
+      minReplicas: 2
+      maxReplicas: 5
       targetCPUUtilizationPercentage: 50
   # TODO The cleanup cronjob is not yet implemented
   cleanup:
@@ -545,7 +545,7 @@ auth:
 
 service:
   name: sentry
-  type: ClusterIP
+  type: NodePort
   externalPort: 9000
   annotations: {}
   # externalIPs:
@@ -588,20 +588,25 @@ nginx:
   #   name: nginx
 
 ingress:
-  enabled: true
-  hostname: debug.sariska.io
-  regexPathStyle: aws-alb
-  annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/tags: ${tags}
-    alb.ingress.kubernetes.io/inbound-cidrs: ${allowed_cidr_blocks_str}
-    alb.ingress.kubernetes.io/subnets: ${public_subnet_ids_str}
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:718762496685:certificate/369c5dcb-06e2-4f23-bee3-b2e680e8e5c9
-    external-dns.alpha.kubernetes.io/hostname: debug.sariska.io
+  enabled: false
+  # If you are using traefik ingress controller, switch this to 'traefik'
+  # if you are using AWS ALB Ingress controller, switch this to 'aws-alb'
+  # if you are using GKE Ingress controller, switch this to 'gke'
+  regexPathStyle: nginx
+  #If you are using AWS ALB Ingress controller, switch to true if you want activate the http to https redirection.
+  alb:
+    httpRedirect: false
+  # annotations:
+  #   If you are using nginx ingress controller, please use at least those 2 annotations
+  #   kubernetes.io/ingress.class: nginx
+  #   nginx.ingress.kubernetes.io/use-regex: "true"
+  #
+  # hostname:
+  # additionalHostNames: []
+  #
+  # tls:
+  # - secretName:
+  #   hosts:
 
 filestore:
   # Set to one of filesystem, gcs or s3 as supported by Sentry.
@@ -725,7 +730,7 @@ externalClickhouse:
 # See https://github.com/bitnami/charts/tree/master/bitnami/kafka
 kafka:
   enabled: true
-  replicaCount: 1
+  replicaCount: 3
   allowPlaintextListener: true
   defaultReplicationFactor: 3
   offsetsTopicReplicationFactor: 3
@@ -792,7 +797,7 @@ postgresql:
   postgresqlDatabase: sentry
   replication:
     enabled: false
-    readReplicas: 1
+    readReplicas: 2
     synchronousCommit: "on"
     numSynchronousReplicas: 1
     applicationName: sentry
@@ -812,7 +817,7 @@ externalPostgresql:
 
 rabbitmq:
   ## If disabled, Redis will be used instead as the broker.
-  enabled: false
+  enabled: true
   clustering:
     forceBoot: true
     rebalance: true
@@ -911,7 +916,7 @@ metrics:
   #     cpu: 100m
   #     memory: 100Mi
 
-  nodeSelector: 
+  nodeSelector:
     alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"
   tolerations: []
   affinity: {}
