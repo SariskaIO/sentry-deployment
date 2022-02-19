@@ -15,7 +15,7 @@ helm install sentry sentry/sentry
 ## With your own vaLues file
 
 ```
-helm install sentry sentry/sentry -f values.yaml
+helm install --namespace debugging sentry sentry/sentry -f values.yaml
 ```
 
 ## Upgrading from 11.x.x version of this Chart to 12.0.0
