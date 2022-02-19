@@ -794,13 +794,11 @@ postgresql:
   enabled: true
   nameOverride: sentry-postgresql
   postgresqlUsername: postgres
+  postgresqlPassword: postgres
   postgresqlDatabase: sentry
   replication:
     enabled: false
-    readReplicas: 2
-    synchronousCommit: "on"
-    numSynchronousReplicas: 1
-    applicationName: sentry
+
   ## Use this to enable an extra service account
   # serviceAccount:
   #   enabled: false
