@@ -574,13 +574,13 @@ slack: {}
 #   Reference -> https://develop.sentry.dev/integrations/slack/
 
 nginx:
-  enabled: false
+  enabled: true
   containerPort: 8080
   existingServerBlockConfigmap: '{{ template "sentry.fullname" . }}'
   resources: {}
   replicaCount: 1
   service:
-    type: ClusterIP
+    type: NodePort
     port: 80
   ## Use this to enable an extra service account
   # serviceAccount:
