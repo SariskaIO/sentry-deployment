@@ -2,8 +2,8 @@ prefix:
 
 user:
   create: true
-  email: admin@sentry.local
-  password: aaaa
+  email: admin@sariska.io
+  password: admin@123
 
   ## set this value to an existingSecret name to create the admin user with the password in the secret
   # existingSecret: sentry-admin-password
@@ -740,9 +740,11 @@ nginx:
   resources: {}
   replicaCount: 1
   service:
-    type: ClusterIP
+    type: NodePort
     ports:
       http: 80
+      
+      
   ## Use this to enable an extra service account
   # serviceAccount:
   #   create: false
