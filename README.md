@@ -11,8 +11,9 @@ helm install --namespace debugging sentry sentry/sentry -f values.yaml
  helm upgrade  --namespace debugging sentry sentry/sentry -f values.yaml
  
  
- 
- 
+## When running upgrades, make sure to give back the `system.secretKey` value.
+
+kubectl -n debugging get configmap sentry-sentry -o json | grep -m1 -Po '(?<=system.secret-key: )[^\\]*'
  
  
  ## Introduction
