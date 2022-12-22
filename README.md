@@ -12,6 +12,11 @@ helm install --namespace debugging sentry sentry/sentry -f values.yaml
  
  
  
+ 
+ 
+ 
+ 
+ 
 Sentry is a cross-platform crash reporting and aggregation platform.
 
 This repository aims to support Sentry 10 and move out from the deprecated Helm charts official repo.
