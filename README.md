@@ -32,6 +32,45 @@ Big thanks to the maintainers of the [deprecated chart](https://github.com/helm/
 
 For now the full list of values is not documented but you can get inspired by the values.yaml specific to each directory.
 
+## Upgrading from 16.x.x version of this Chart to 17.x.x
+
+Sentry version from 22.10.0 onwards should be using chart 17.x.x
+
+- post process forwarder events and transactions topics are splitted in Sentry 22.10.0
+
+You can delete the deployment "sentry-post-process-forward" as it's no longer needed.
+
+
+
+## Upgrading from 15.x.x version of this Chart to 16.x.x
+
+system.secret-key is removed
+
+See https://github.com/sentry-kubernetes/charts/tree/develop/sentry#sentry-secret-key
+
+
+## Upgrading from 14.x.x version of this Chart to 15.x.x
+
+Chart dependencies has been upgraded because of bitnami charts removal. 
+Changes:
+- `nginx.service.port: 80` > `nginx.service.ports.http: 80`
+- `kafka.service.port` > `kafka.service.ports.client`
+
+Bumped dependencies:
+- redis > 16.12.1 - latest version of chart
+- kafka > 16.3.2 - chart aligned with zookeeper dependency, upgraded kafka to 3.11
+- rabbit > 8.32.2 - latest 3.9.* image version of chart
+- postgresql > 10.16.2 - latest wersion of chart with postgres 11
+- nginx > 12.0.4 - latest version of chart
+
+## Upgrading from 13.x.x version of this Chart to 14.0.0
+
+ClickHouse was reconfigured with sharding and replication in-mind, If you are using external ClickHouse, you don't need to do anything.
+
+**WARNING**: You will lose current event data<br>
+Otherwise, you should delete the old ClickHouse volumes in-order to upgrade to this version.
+
+
 ## Upgrading from 12.x.x version of this Chart to 13.0.0
 
 The service annotions have been moved from the `service` section to the respective service's service sub-section. So what was:
@@ -59,6 +98,7 @@ relay:
       alb.ingress.kubernetes.io/healthcheck-path: /api/relay/healthcheck/ready/
       alb.ingress.kubernetes.io/healthcheck-port: traffic-port
 ```
+
 
 ## Upgrading from 10.x.x version of this Chart to 11.0.0
 
@@ -132,7 +172,7 @@ As this chart runs in helm 3 and also tries its best to follow on from the origi
 From the previous upgrade, make sure to get the following from your previous installation:
 
 - Redis Password (If Redis auth was enabled)
-- Postgresql Password
+- PostgreSQL Password
   Both should be in the `secrets` of your original 9.0 release. Make a note of both of these values.
 
 #### Upgrade Steps
@@ -157,7 +197,7 @@ If Redis auth is disabled:
 
 Please also follow the steps for Major version 3 to 4 migration
 
-## PostgresSQL
+## PostgreSQL
 
 By default, PostgreSQL is installed as part of the chart. To use an external PostgreSQL server set `postgresql.enabled` to `false` and then set `postgresql.postgresHost` and `postgresql.postgresqlPassword`. The other options (`postgresql.postgresqlDatabase`, `postgresql.postgresqlUsername` and `postgresql.postgresqlPort`) may also want changing from their default values.
 

@@ -12,51 +12,16 @@ helm repo add sentry https://sentry-kubernetes.github.io/charts
 helm install sentry sentry/sentry
 ```
 
-## With your own vaLues file
+## With your own values file
 
 ```
 helm install --namespace debugging sentry sentry/sentry -f values.yaml
 ```
 
-## Upgrading from 11.x.x version of this Chart to 12.0.0
+# Upgrade
 
-Redis chart was upgraded to newer version. If you are using external redis, you don't need to do anything.
-
-Otherwise, when upgrading to chart version 12.x.x from 11.x.x you need to either run `helm upgrade` with `--force` flag, or prior to upgrade delete statefulsets for redis master and redis slave. Then run upgrade and it will roll out new statefulsets. Your master redis data will not be lost (PVC is not deleted when you delete statefulset). Your redis slave will now be named redis replica and you can delete PVCs that were used by redis slave after the upgrade.
-
-## Upgrading from 10.x.x version of this Chart to 11.0.0
-
-If you were using clickhouse tabix externally, we disabled it per default.
-
-### Upgrading from deprecated 9.0 -> 10.0 Chart
-
-As this chart runs in helm 3 and also tries its best to follow on from the original Sentry chart. There are some steps that needs to be taken in order to correctly upgrade.
-
-From the previous upgrade, make sure to get the following from your previous installation:
-
-- Redis Password (If Redis auth was enabled)
-- Postgresql Password
-  Both should be in the `secrets` of your original 9.0 release. Make a note of both of these values.
-
-#### Upgrade Steps
-
-Due to an issue where transferring from Helm 2 to 3. Statefulsets that use the following: `heritage: {{ .Release.Service }}` in the metadata field will error out with a `Forbidden` error during the upgrade. The only workaround is to delete the existing statefulsets (Don't worry, PVC will be retained):
-
-> kubectl delete --all sts -n <Sentry Namespace>
-
-Once the statefulsets are deleted. Next steps is to convert the helm release from version 2 to 3 using the helm 3 plugin:
-
-> helm3 2to3 convert <Sentry Release Name>
-
-Finally, it's just a case of upgrading and ensuring the correct params are used:
-
-If Redis auth enabled:
-
-> helm upgrade -n <Sentry namespace> <Sentry Release> . --set redis.usePassword=true --set redis.password=<Redis Password>
-
-If Redis auth is disabled:
-
-> helm upgrade -n <Sentry namespace> <Sentry Release> .
+Read the upgrade guide before upgrading to major versions of the chart.
+[Upgrade Guide](docs/UPGRADE.md)
 
 ## Configuration
 
@@ -98,7 +63,7 @@ Note: this table is incomplete, so have a look at the values.yaml in case you mi
 | `serviceAccount.enabled`                      | If `true`, a custom Service Account will be used.                                                                                                                   | `false`                        |
 | `serviceAccount.name`                         | The base name of the ServiceAccount to use. Will be appended with e.g. `snuba` or `web` for the pods accordingly.                                                   | `"sentry"`                     |
 | `serviceAccount.automountServiceAccountToken` | Automount API credentials for a Service Account.                                                                                                                    | `true`                         |
-| `system.secretKey`                            | secret key for the session cookie ([documentation](https://develop.sentry.dev/config/#general))                                                                     | `nil`                          |
+| `sentry.existingSecret`                       | Existing kubernetes secret to be used for secret key for the session cookie ([documentation](https://develop.sentry.dev/config/#general))                                                                     | `nil`                          |
 | `sentry.features.vstsLimitedScopes`           | Disables the azdo-integrations with limited scopes that is the cause of so much pain                                                                                | `true`                         |
 | `sentry.web.customCA.secretName`              | Allows mounting a custom CA secret                                                                                                                                  | `nil`                          |
 | `sentry.web.customCA.item`                    | Key of CA cert object within the secret                                                                                                                             | `ca.crt`                       |
@@ -111,13 +76,12 @@ By default, NGINX is enabled to allow sending the incoming requests to [Sentry R
 
 ## Sentry secret key
 
-For your security, the [`system.secret-key`](https://develop.sentry.dev/config/#general) is generated for you on the first installation. Another one will be regenerated on each upgrade invalidating all the current sessions unless it's been provided. The value is stored in the `sentry-sentry` configmap.
+If no `sentry.existingSecret` value is specified, for your security, the [`system.secret-key`](https://develop.sentry.dev/config/#general) is generated for you on the first installation and stored in a kubernetes secret.
 
-```
-helm upgrade ... --set system.secretKey=xx
-```
+If `sentry.existingSecret` / `sentry.existingSecretKey` values are provided, those secrets will be used.
 
-## Symbolicator
+
+## Symbolicator and or JavaScript source maps
 
 For getting native stacktraces and minidumps symbolicated with debug symbols (e.g. iOS/Android), you need to enable Symbolicator via
 
@@ -144,125 +108,90 @@ So you would want to create and use a `StorageClass` with a supported volume dri
 
 Its also important having `connect_to_reserved_ips: true` in the symbolicator config file, which this Chart defaults to.
 
-# Usage with Terraform + AWS
+#### Source Maps
 
-`./templates/sentry_values.yaml` file
+To get javascript source map processing working, you need to activate sourcemaps, which in turn activates the memcached dependency:
 
 ```yaml
-prefix: ${module_prefix}
+sourcemaps:
+  enabled: true
+```
 
-user:
-  create: true
-  email: ${sentry_email}
-  password: ${sentry_password}
+For details on the background see this blog post: https://engblog.yext.com/post/sentry-js-source-maps
 
-nginx:
-  enabled: false
 
-rabbitmq:
-  enabled: false
+## Geolocation
+
+[Geolocation of IP addresses](https://develop.sentry.dev/self-hosted/geolocation/) is supported if you provide a GeoIP database:
+
+Example values.yaml:
+
+```yaml
+
+relay:
+  # provide a volume for relay that contains the geoip database
+  volumes:
+    - name: geoip
+      hostPath:
+        path: /geodata
+        type: Directory
+
 
 sentry:
   web:
-    service:
-      annotations:
-        alb.ingress.kubernetes.io/healthcheck-path: /_health/
-        alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    # provide a volume for sentry-web that contains the geoip database
+    volumes:
+      - name: geoip
+        hostPath:
+          path: /geodata
+          type: Directory
 
-relay:
-  service:
-    annotations:
-      alb.ingress.kubernetes.io/healthcheck-path: /api/relay/healthcheck/ready/
-      alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+  worker:
+    # provide a volume for sentry-worker that contains the geoip database
+    volumes:
+      - name: geoip
+        hostPath:
+          path: /geodata
+          type: Directory
 
-postgresql:
-  enabled: true
-  nameOverride: sentry-postgresql
-  postgresqlUsername: postgres
-  postgresqlPassword: ${postgres_password}
-  postgresqlDatabase: sentry
-  replication:
-    enabled: false
 
-ingress:
-  enabled: true
-  hostname: ${sentry_dns_name}
-  regexPathStyle: aws-alb
-  annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/tags: ${tags}
-    alb.ingress.kubernetes.io/inbound-cidrs: ${allowed_cidr_blocks_str}
-    alb.ingress.kubernetes.io/subnets: ${public_subnet_ids_str}
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/certificate-arn: ${subdomain_cert_arn}
-    external-dns.alpha.kubernetes.io/hostname: ${sentry_dns_name}
+# enable and reference the volume
+geodata:
+  volumeName: geoip
+  # mountPath of the volume containing the database
+  mountPath: /geodata
+  # path to the geoip database inside the volumemount
+  path: /geodata/GeoLite2-City.mmdb
 ```
 
-`./helm.tf` file
+## External Kafka configuration
 
-```terraform
-resource "helm_release" "sentry" {
-  name  = "sentry"
-  chart = "${path.module}/helm_sentry/"
-  repository = "https://sentry-kubernetes.github.io/charts"
-  version    = "13.0.0"
-  timeout           = 600
-  wait              = false
-  dependency_update = true
-
-  values = [
-    templatefile(
-      "${path.module}/templates/sentry_values.yaml",
-      {
-        module_prefix   = "${var.module_prefix}",
-        sentry_email    = "${var.sentry_email}",
-        sentry_password = "${var.sentry_password}",
-
-        sentry_dns_name         = "${local.sentry_dns_name}",
-        subdomain_cert_arn      = "${var.subdomain_cert_arn}",
-        allowed_cidr_blocks_str = "${join(",", var.allowed_cidr_blocks)}",
-        private_subnet_ids_str  = "${join(",", var.private_subnet_ids)}",
-        public_subnet_ids_str   = "${join(",", var.public_subnet_ids)}",
-        tags                    = "environment=${var.env}"
-        # postgres_db_host        = "${module.sentry_rds_pg.this_rds_cluster_endpoint}",
-        # postgres_db_name        = "${local.db_name}",
-        postgres_username = "${local.db_user}",
-        postgres_password = "${local.db_pass}",
-      }
-    )
-  ]
-
-  depends_on = [
-    helm_release.lb_controller,
-    helm_release.external_dns,
-  ]
-}
-```
-
-### Notes
-
-1. Ensure the control plane and node security groups are appropriately configured as documented [here](https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html#control-plane-worker-node-sgs).
-2. Annotations for ingress are as mentioned [here](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/ingress/annotations/)
-3. `healthcheck-path` and `healthcheck-port` annotations can be setup per target group using the alb annotations in the corresponding services as mentioned [here](https://github.com/kubernetes-sigs/aws-load-balancer-controller/issues/1056#issuecomment-551585078). For example, here we have:
+You can either provide a single host, which is there by default in `values.yaml`, like this:
 
 ```yaml
-sentry:
-  web:
-    service:
-      annotations:
-        alb.ingress.kubernetes.io/healthcheck-path: /_health/
-        alb.ingress.kubernetes.io/healthcheck-port: traffic-port
-
-relay:
-  service:
-    annotations:
-      alb.ingress.kubernetes.io/healthcheck-path: /api/relay/healthcheck/ready/
-      alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+externalKafka:
+  ## Hostname or ip address of external kafka
+  ##
+  host: "kafka-confluent"
+  port: 9092
 ```
 
-Which are load balancer annotations specified in the service configuration for the load balancer to pick while creating the target groups.
+or you can feed in a cluster of Kafka instances like below:
 
-NOTE: AWS ALB Controller's Service annotations don't apply here as we want the `aws-load-balancer-controller` to pick-up the services and apply the appropriate healthcheck-path per service and not create a load balancer for the service itself. The service annotations will only apply when you want the service to be load balanced.
+```yaml
+externalKafka:
+  ## List of Hostnames or ip addresses of external kafka
+  - host: "233.5.100.28"
+    port: 9092
+  - host: "233.5.100.29"
+    port: 9092
+  - host: "233.5.100.30"
+    port: 9092
+```
+
+
+
+# Usage
+
+- [AWS + Terraform](docs/usage-aws-terraform.md)
+- [DigitalOcean](docs/usage-digitalocean.md)

@@ -66,17 +66,18 @@ spec:
         imagePullPolicy: {{ default "IfNotPresent" .Values.images.snuba.pullPolicy }}
         command:
           - "snuba"
-          - "subscriptions"
-          - "--auto-offset-reset"
-          - "{{ .Values.snuba.subscriptionConsumerTransactions.autoOffsetReset }}"
-          - "--consumer-group=snuba-transactions-subscriptions-consumers"
-          - "--topic=events"
-          - "--result-topic=transactions-subscription-results"
+          - "subscriptions-scheduler-executor"
+          - "--auto-offset-reset={{ .Values.snuba.subscriptionConsumerTransactions.autoOffsetReset }}"
           - "--dataset=transactions"
-          - "--commit-log-topic=snuba-commit-log"
-          - "--commit-log-group=snuba-transactions-consumers"
+          - "--entity=transactions"
+          {{- if .Values.snuba.subscriptionConsumerTransactions.noStrictOffsetReset }}
+          - "--no-strict-offset-reset"
+          {{- end }}
+          - "--consumer-group=snuba-transactions-subscriptions-consumers"
+          - "--followed-consumer-group=transactions_group"
           - "--delay-seconds=60"
           - "--schedule-ttl=60"
+          - "--stale-threshold-seconds=900"
         ports:
         - containerPort: {{ template "snuba.port" }}
         env:
@@ -91,12 +92,18 @@ spec:
         - mountPath: /etc/snuba
           name: config
           readOnly: true
+{{- if .Values.snuba.subscriptionConsumerTransactions.volumeMounts }}
+{{ toYaml .Values.snuba.subscriptionConsumerTransactions.volumeMounts | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.snuba.subscriptionConsumerTransactions.resources | indent 12 }}
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ .Values.serviceAccount.name }}-snuba
       {{- end }}
       volumes:
-        - name: config
-          configMap:
-            name: {{ template "sentry.fullname" . }}-snuba
+      - name: config
+        configMap:
+          name: {{ template "sentry.fullname" . }}-snuba
+{{- if .Values.snuba.subscriptionConsumerTransactions.volumes }}
+{{ toYaml .Values.snuba.subscriptionConsumerTransactions.volumes | indent 6 }}
+{{- end }}
