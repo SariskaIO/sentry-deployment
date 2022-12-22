@@ -15,7 +15,7 @@ helm install --namespace debugging sentry sentry/sentry -f values.yaml
  
  
  
- 
+ ## Introduction
  
 Sentry is a cross-platform crash reporting and aggregation platform.
 
