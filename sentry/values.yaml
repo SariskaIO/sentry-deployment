@@ -61,7 +61,8 @@ relay:
   probeTimeoutSeconds: 2
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
   securityContext: {}
   service:
     annotations: {}
@@ -105,7 +106,8 @@ sentry:
     probeTimeoutSeconds: 2
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     service:
       annotations: {}
@@ -135,7 +137,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     # tolerations: []
     # podLabels: []
 
@@ -161,7 +164,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -187,7 +191,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -213,7 +218,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -239,7 +245,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -264,7 +271,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     # tolerations: []
     # podLabels: []
     sidecars: []
@@ -276,7 +284,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -291,7 +300,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -306,7 +316,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -320,7 +331,8 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -359,7 +371,8 @@ snuba:
       timeoutSeconds: 2
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     service:
       annotations: {}
@@ -380,7 +393,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -407,7 +421,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -434,7 +449,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -451,7 +467,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -464,7 +481,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -477,7 +495,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -504,7 +523,8 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -580,7 +600,8 @@ hooks:
         cpu: 100m
         memory: 64Mi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # volumes: []
@@ -598,7 +619,8 @@ hooks:
     sidecars: []
     volumes: []
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     # tolerations: []
     # volumes: []
     # volumeMounts: []
@@ -613,7 +635,8 @@ hooks:
         cpu: 700m
         memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     # tolerations: []
     # volumes: []
     # volumeMounts: []
@@ -653,7 +676,8 @@ symbolicator:
     probeInitialDelaySeconds: 10
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
     securityContext: {}
     # tolerations: []
     # podLabels: []
@@ -1119,7 +1143,8 @@ metrics:
   #     cpu: 100m
   #     memory: 100Mi
 
-  nodeSelector: {}
+  nodeSelector:
+    alpha.eksctl.io/nodegroup-name: "managed-ng-debugging"         
   tolerations: []
   affinity: {}
   securityContext: {}
