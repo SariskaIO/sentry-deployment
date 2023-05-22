@@ -6,22 +6,22 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 16.12.1
 - name: kafka
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
   version: 16.3.2
 - name: clickhouse
   repository: https://sentry-kubernetes.github.io/charts
   version: 3.2.0
 - name: zookeeper
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
   version: 9.0.0
 - name: rabbitmq
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
   version: 8.32.2
 - name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.16.2
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 12.5.1
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
   version: 12.0.4
-digest: sha256:89370355980c21097da681e8803e3b2911b27645b84d8f7865769282420ad68d
-generated: "2022-11-04T13:10:26.422245+01:00"
+digest: sha256:1baaa6d1a512a64f46ce3325512d2606df366730c8256dc781812192da5595a0
+generated: "2023-05-15T18:18:28.638279+03:00"

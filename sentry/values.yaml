@@ -35,7 +35,7 @@ images:
     imagePullSecrets: []
   symbolicator:
     # repository: getsentry/symbolicator
-    tag: 0.6.0
+    # tag: Chart.AppVersion
     # pullPolicy: IfNotPresent
     imagePullSecrets: []
 
@@ -239,6 +239,30 @@ sentry:
     #   - mountPath: /dev/shm
     #     name: dshm
 
+  ingestReplayRecordings:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
+    sidecars: []
+    volumes: []
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
   billingMetricsConsumer:
     replicas: 1
     # concurrency: 4
@@ -289,7 +313,20 @@ sentry:
     securityContext: {}
     # tolerations: []
     # podLabels: []
-    # commitBatchSize: 1
+    sidecars: []
+    volumes: []
+    # noStrictOffsetReset: false
+    # volumeMounts: []
+
+  subscriptionConsumerSessions:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    # tolerations: []
+    # podLabels: []
     sidecars: []
     volumes: []
     # noStrictOffsetReset: false
@@ -305,7 +342,6 @@ sentry:
     securityContext: {}
     # tolerations: []
     # podLabels: []
-    # commitBatchSize: 1
     sidecars: []
     volumes: []
     # noStrictOffsetReset: false
@@ -321,7 +357,6 @@ sentry:
     securityContext: {}
     # tolerations: []
     # podLabels: []
-    # commitBatchSize: 1
     sidecars: []
     volumes: []
     # volumeMounts: []
@@ -336,7 +371,6 @@ sentry:
     securityContext: {}
     # tolerations: []
     # podLabels: []
-    # commitBatchSize: 1
     sidecars: []
     volumes: []
     # volumeMounts: []
@@ -346,6 +380,7 @@ sentry:
     failedJobsHistoryLimit: 5
     activeDeadlineSeconds: 100
     concurrencyPolicy: Allow
+    concurrency: 1
     enabled: true
     schedule: "0 0 * * *"
     days: 90
@@ -455,7 +490,6 @@ snuba:
     # tolerations: []
     # podLabels: []
     autoOffsetReset: "earliest"
-    maxBatchSize: "3"
     # maxBatchTimeMs: ""
     # queuedMaxMessagesKbytes: ""
     # queuedMinMessages: ""
@@ -489,6 +523,49 @@ snuba:
     autoOffsetReset: "earliest"
     # volumes: []
     # volumeMounts: []
+
+  subscriptionConsumerSessions:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # commitBatchSize: 1
+    autoOffsetReset: "earliest"
+    sidecars: []
+    volumes: []
+    # noStrictOffsetReset: false
+    # volumeMounts: []
+
+  replaysConsumer:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
 
   sessionsConsumer:
     replicas: 1
@@ -551,33 +628,6 @@ snuba:
 
   migrateJob:
     env: []
-
-  cleanupErrors:
-    successfulJobsHistoryLimit: 5
-    activeDeadlineSeconds: 100
-    concurrencyPolicy: Allow
-    enabled: true
-    schedule: "0 * * * *"
-    sidecars: []
-    volumes: []
-    # securityContext: {}
-    serviceAccount: {}
-    # volumes: []
-    # volumeMounts: []
-
-  cleanupTransactions:
-    successfulJobsHistoryLimit: 5
-    failedJobsHistoryLimit: 5
-    activeDeadlineSeconds: 100
-    concurrencyPolicy: Allow
-    enabled: true
-    schedule: "0 * * * *"
-    sidecars: []
-    volumes: []
-    # securityContext: {}
-    serviceAccount: {}
-    # volumes: []
-    # volumeMounts: []
 
 hooks:
   enabled: true
@@ -742,7 +792,20 @@ github: {}
 #   clientId: "xxxxx"
 #   clientSecret: "xxxxx"
 #   privateKey: "-----BEGIN RSA PRIVATE KEY-----\nMIIEpA" !!!! Don't forget a trailing \n
-#   webhookSecret:  "xxxxx`"
+#   webhookSecret:  "xxxxx"
+#
+#   Note: if you use `existingSecret`, all above `clientId`, `clientSecret`, `privateKey`, `webhookSecret`
+#   params would be ignored, because chart will suppose that they are stored in `existingSecret`. So you
+#   must define all required keys and set it at least to empty strings if they are not needed in `existingSecret`
+#   secret (client-id, client-secret, webhook-secret, private-key)
+#
+#   existingSecret: "xxxxx"
+#   existingSecretPrivateKeyKey: ""     # by default "private-key"
+#   existingSecretWebhookSecretKey: ""  # by default "webhook-secret"
+#   existingSecretClientIdKey: ""       # by default "client-id"
+#   existingSecretClientSecretKey: ""   # by default "client-secret"
+#
+#   Reference -> https://docs.sentry.io/product/integrations/source-code-mgmt/github/
 
 # https://developers.google.com/identity/sign-in/web/server-side-flow#step_1_create_a_client_id_and_client_secret
 google: {}
@@ -755,7 +818,12 @@ slack: {}
 #   clientId:
 #   clientSecret:
 #   signingSecret:
+#   existingSecret:
 #   Reference -> https://develop.sentry.dev/integrations/slack/
+
+openai: {}
+#   existingSecret: "xxxxx"
+#   existingSecretKey: ""   # by default "api-token"
 
 nginx:
   enabled: true
@@ -864,7 +932,7 @@ config:
 clickhouse:
   enabled: true
   clickhouse:
-    imageVersion: "20.8.19.4"
+    imageVersion: "20.12.8.5"
     configmap:
       remote_servers:
         internal_replication: true
@@ -1003,8 +1071,8 @@ externalRedis:
 postgresql:
   enabled: true
   nameOverride: sentry-postgresql
-  postgresqlUsername: postgres
-  postgresqlDatabase: sentry
+  auth:
+    database: sentry
   replication:
     enabled: false
     readReplicas: 2

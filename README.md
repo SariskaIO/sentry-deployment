@@ -32,6 +32,24 @@ Big thanks to the maintainers of the [deprecated chart](https://github.com/helm/
 
 For now the full list of values is not documented but you can get inspired by the values.yaml specific to each directory.
 
+
+## Upgrading from 18.x.x version of this Chart to 19.x.x
+
+Chart dependencies has been upgraded because of sentry requirements. 
+Changes:
+- The minimum required version of Postgresql is 14.5 (works with 15.x too)
+
+Bumped dependencies:
+- postgresql > 12.5.1 - latest wersion of chart with postgres 15
+
+
+## Upgrading from 17.x.x version of this Chart to 18.x.x
+
+If Kafka is complaining about unknown or missing topic, please connect to kafka-0 and run 
+
+`/opt/bitnami/kafka/bin/kafka-topics.sh --create --topic ingest-replay-recordings --bootstrap-server localhost:9092`
+
+
 ## Upgrading from 16.x.x version of this Chart to 17.x.x
 
 Sentry version from 22.10.0 onwards should be using chart 17.x.x
@@ -40,6 +58,8 @@ Sentry version from 22.10.0 onwards should be using chart 17.x.x
 
 You can delete the deployment "sentry-post-process-forward" as it's no longer needed.
 
+`sentry-worker` may failed to start by [#774](https://github.com/sentry-kubernetes/charts/issues/774).
+If you encountered this issue, please reset `counters-0`, `triggers-0` queues.
 
 
 ## Upgrading from 15.x.x version of this Chart to 16.x.x
@@ -141,6 +161,18 @@ By default, NGINX is enabled to allow sending the incoming requests to [Sentry R
 Note: if you are using NGINX Ingress, please set this annotation on your ingress : nginx.ingress.kubernetes.io/use-regex: "true".
 If you are using `additionalHostNames` the `nginx.ingress.kubernetes.io/upstream-vhost` annotation might also come in handy.
 It sets the `Host` header to the value you provide to avoid CSRF issues.
+
+### Letsencrypt on NGINX Ingress Controller
+```
+nginx:
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    enabled: true
+    hostname: fqdn
+    ingressClassName: "nginx"
+    tls: true
+```
 
 ## Clickhouse warning
 

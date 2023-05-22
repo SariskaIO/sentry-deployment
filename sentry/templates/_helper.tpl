@@ -36,7 +36,7 @@
 {{- define "symbolicator.image" -}}
 {{- default "getsentry/symbolicator" .Values.images.symbolicator.repository -}}
 :
-{{- .Values.images.symbolicator.tag -}}
+{{- default .Chart.AppVersion .Values.images.symbolicator.tag -}}
 {{- end -}}
 
 {{- define "dbCheck.image" -}}
@@ -214,7 +214,7 @@ Set postgres port
 */}}
 {{- define "sentry.postgresql.port" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- default 5432 .Values.postgresql.service.port }}
+{{- default 5432 .Values.postgresql.primary.service.ports.postgresql }}
 {{- else -}}
 {{- required "A valid .Values.externalPostgresql.port is required" .Values.externalPostgresql.port -}}
 {{- end -}}
@@ -469,7 +469,7 @@ Common Sentry environment variables
   valueFrom:
     secretKeyRef:
       name: {{ default (include "sentry.postgresql.fullname" .) .Values.postgresql.existingSecret }}
-      key: {{ default "postgresql-password" .Values.postgresql.existingSecretKey }}
+      key: {{ default "postgres-password" .Values.postgresql.existingSecretKey }}
 {{- else if .Values.externalPostgresql.password }}
 - name: POSTGRES_PASSWORD
   value: {{ .Values.externalPostgresql.password | quote }}
@@ -493,5 +493,51 @@ Common Sentry environment variables
     secretKeyRef:
       name: {{ .Values.mail.existingSecret }}
       key: {{ default "mail-password" .Values.mail.existingSecretKey }}
+{{- end }}
+{{- if .Values.slack.existingSecret }}
+- name: SLACK_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "client-id"
+- name: SLACK_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "client-secret"
+- name: SLACK_SIGNING_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "signing-secret"
+{{- end }}
+{{- if and .Values.github.existingSecret }}
+- name: GITHUB_APP_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "private-key" .Values.github.existingSecretPrivateKeyKey }}
+- name: GITHUB_APP_WEBHOOK_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "webhook-secret" .Values.github.existingSecretWebhookSecretKey }}
+- name: GITHUB_APP_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "client-id" .Values.github.existingSecretClientIdKey }}
+- name: GITHUB_APP_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "client-secret" .Values.github.existingSecretClientSecretKey }}
+{{- end }}
+{{- if .Values.openai.existingSecret }}
+- name: OPENAI_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.openai.existingSecret }}
+      key: {{ default "api-token" .Values.openai.existingSecretKey }}
 {{- end }}
 {{- end -}}
